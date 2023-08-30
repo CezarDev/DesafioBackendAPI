@@ -2,8 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cliente;
+use App\Models\Produto;
+use App\Models\Venda;
+use App\Models\VendaItem;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Validator;
+use function PHPUnit\Framework\isNull;
 
 class VendaController extends Controller
 {
@@ -28,7 +35,75 @@ class VendaController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'cliente.nome'      => 'required',
+            'cliente.cpf'       => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' =>  $validator->errors()]);
+        }
+
+        $dados = $request->all();
+        $cliente = Cliente::find($dados['cliente']['id']);
+
+        if (!$cliente)
+            return response()->json(['message' => 'Cliente não encontrado'], 404);
+
+        if (count($dados['itens']) > 0) {
+            try {
+                $valorTotal = 0;
+
+                $venda = new Venda([
+                    'descricao' => $dados['descricao'],
+                    'valor_total' => $valorTotal,
+                    'data_venda' => date('Y-m-d H:i:s'),
+                ]);
+                $venda->save();
+
+                $produtoNaoEncontrado = '';
+                foreach ($dados['itens'] as $item) {
+                    $produto = Produto::find($item['id']);
+                    if ($produto) {
+
+                        $valorTotalItem = ($item['quantidade'] * $produto->valor);
+
+                        $intesDaVenda = new VendaItem([
+                            'quantidade'     => $item['quantidade'],
+                            'valor_unitario' => $produto->valor,
+                            'valor_total'    => $valorTotalItem,
+                            'venda_id'       => $venda->id,
+                            'cliente_id'     => $cliente->id,
+                            'produto_id'     => $produto->id,
+                        ]);
+
+                        $intesDaVenda->save();
+                        $valorTotal += $valorTotalItem;
+
+                    } else {
+                        $produtoNaoEncontrado .= $item['descricao'] . " ";
+                    }
+                }
+
+                $venda = Venda::updateOrCreate(['id' => $venda->id], ['valor_total' => $valorTotal]);
+
+                $itens = VendaItem::where('venda_id', $venda->id)->get();
+
+                return response()->json(
+                    [   'message'      => 'Venda realizada com sucesso !',
+                        'venda'        => $venda->makeHidden('created_at', 'updated_at'),
+                        'cliente'      => $cliente->makeHidden('primeira_compra','created_at', 'updated_at'),
+                        'itens'        => $itens->makeHidden('created_at', 'updated_at'),
+                        'sem_cadastro' => $produtoNaoEncontrado
+                    ]);
+
+            } catch (Exception $exception) {
+                $erro = $exception->getMessage();
+                return response()->json(['message' => $erro], 500);
+            }
+        }
+
+        return response()->json(['message' => 'Nenhum produto informado para venda'], 404);
     }
 
     /**
