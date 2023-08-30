@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Produto;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Storage;
 
 class ProdutoController extends Controller
 {
@@ -31,6 +32,7 @@ class ProdutoController extends Controller
             'nome'            => $request->nome,
             'descricao'       => $request->descricao,
             'valor'           => $request->valor,
+            'link'            => $request->link ?? null,
             'tipo_produto_id' => $request->tipo_produto_id,
             'disponivel'      => $request->disponivel ?? true,
         ]);
@@ -84,6 +86,7 @@ class ProdutoController extends Controller
             'nome'            => $request->nome,
             'descricao'       => $request->descricao,
             'valor'           => $request->valor,
+            'link'            => $request->link ?? null,
             'tipo_produto_id' => $request->tipo_produto_id,
         ]);
 
@@ -109,7 +112,18 @@ class ProdutoController extends Controller
 
         return response()->json([
             'message' => 'Produto excluído com sucesso',
-            'clientes' => $produtos
+            'produtos' => $produtos
         ]);
+    }
+
+    public function downloadLink($id)
+    {
+        $produto = Produto::find($id);
+
+        if (!$produto || empty($produto->link)) {
+            return response()->json(['message' => 'Produto não encontrado ou sem link de download'], 404);
+        }
+
+        return response()->json(['download_link' => $produto->link]);
     }
 }

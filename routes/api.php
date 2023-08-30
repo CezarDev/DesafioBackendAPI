@@ -26,3 +26,6 @@ Route::apiResources([
         'clientes' => ClienteController::class,
         'vendas'   => VendaController::class,
 ]);
+
+Route::get('produtos/{id}/download', [ProdutoController::class, 'downloadLink']);
+
