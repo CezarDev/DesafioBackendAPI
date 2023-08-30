@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Cliente;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Validator;
 
 class ClienteController extends Controller
 {
@@ -13,7 +14,9 @@ class ClienteController extends Controller
      */
     public function index()
     {
-        //
+        $clientes = Cliente::get();
+
+        return response()->json(['clientes' => $clientes]);
     }
 
     /**
@@ -79,7 +82,35 @@ class ClienteController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $cliente = Cliente::find($id);
+
+        if (!$cliente)
+            return response()->json(['message' => 'Cliente não encontrado'], 404);
+
+        $validator = Validator::make($request->all(), [
+            'nome'      => 'required',
+            'cpf'       => 'required',
+            'email'     => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' =>  $validator->errors()]);
+        }
+
+        $cliente = Cliente::updateOrCreate(
+            ['id' => $id],
+            [
+             'nome'  => $request->nome,
+             'cpf'   => $request->cpf,
+             'email' => $request->email,
+            ]
+        );
+
+        return response()->json([
+            'message' => 'Cliente atualizado com sucesso',
+            'cliente' => $cliente
+        ]);
+
     }
 
     /**
@@ -87,6 +118,18 @@ class ClienteController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $cliente = Cliente::find($id);
+
+        if (!$cliente)
+            return response()->json(['message' => 'Cliente não encontrado'], 404);
+
+        $cliente->delete();
+
+        $clientes = Cliente::get();
+
+        return response()->json([
+            'message' => 'Cliente excluído com sucesso',
+            'clientes' => $clientes
+        ]);
     }
 }

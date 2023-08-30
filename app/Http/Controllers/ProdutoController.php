@@ -13,7 +13,9 @@ class ProdutoController extends Controller
      */
     public function index()
     {
-        //
+        $produtos = Produto::get();
+
+        return response()->json(['produtos' => $produtos]);
     }
 
 
@@ -70,7 +72,25 @@ class ProdutoController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $request->validate([
+            'nome'      => 'required|',
+            'descricao' => 'required',
+            'valor'     => 'required|numeric',
+        ]);
+
+        $produto = Produto::updateOrCreate(
+            ['id' => $id],
+            [
+            'nome'            => $request->nome,
+            'descricao'       => $request->descricao,
+            'valor'           => $request->valor,
+            'tipo_produto_id' => $request->tipo_produto_id,
+        ]);
+
+        return response()->json([
+            'message' => 'Produto atualizado com sucesso',
+            'produto' => $produto
+        ]);
     }
 
     /**
@@ -78,6 +98,18 @@ class ProdutoController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $produto = Produto::find($id);
+
+        if (!$produto)
+            return response()->json(['message' => 'Produto não encontrado'], 404);
+
+        $produto->delete();
+
+        $produtos = Produto::get();
+
+        return response()->json([
+            'message' => 'Produto excluído com sucesso',
+            'clientes' => $produtos
+        ]);
     }
 }

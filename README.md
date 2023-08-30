@@ -12,7 +12,9 @@
 
 ### EXECUTE OS SEGUINTES COMANDOS
 
-
+- composer install 
+- copie o .env.example para .env 
+- php artisan key:generate
 - php artisan optimize:clear
 - php artisan migrate
 - php artisan db:seed --class=TipoProdutoSeeder
