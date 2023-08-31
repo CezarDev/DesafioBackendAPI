@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\ProdutoController;
 use App\Http\Controllers\VendaController;
@@ -17,15 +18,16 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
+Route::post('login', [AuthController::class, 'login']);
 
-Route::apiResources([
+Route::middleware('jwt.auth')->group(function () {
+    Route::apiResources([
         'produtos' => ProdutoController::class,
         'clientes' => ClienteController::class,
-        'vendas'   => VendaController::class,
-]);
+        'vendas' => VendaController::class,
+    ]);
 
-Route::get('produtos/{id}/download', [ProdutoController::class, 'downloadLink']);
+    Route::get('produtos/{id}/download', [ProdutoController::class, 'downloadLink']);
+
+});
 

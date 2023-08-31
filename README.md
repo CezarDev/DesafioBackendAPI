@@ -17,5 +17,19 @@
 - php artisan key:generate
 - php artisan optimize:clear
 - php artisan migrate
-- php artisan db:seed --class=TipoProdutoSeeder
 
+### CRIE OS TIPOS DE PRODUTOS E O USER ADMIN
+
+- php artisan db:seed --class=TipoProdutoSeeder
+- php artisan db:seed --class=UsersTableSeeder
+
+### GERE A CHAVE PARA ENCRIPTAR O TOKEN JWT
+- php artisan jwt:secret
+
+### OBTENDO O TOKEN  ( /api/login )
+- PASSE AS CREDÊNCIAS NO CORPO DA REQUISIÇÃO
+
+  { "email": "admin@email.com","password": "senha123" }
+
+
+- Use o token em Authorization Bearer Token ou no Headers para as demais requisições
