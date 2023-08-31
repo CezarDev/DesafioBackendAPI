@@ -14,6 +14,8 @@ type Query {
 
     clientes( nome: String @where(operator: "like") ): [Cliente!]! @paginate(defaultCount: 10)
 
+    vendas( descricao: String @where(operator: "like") ): [Venda!]! @paginate(defaultCount: 10)
+
 }
 
 "Account of a person who utilizes this application."
@@ -42,3 +44,28 @@ type Cliente {
     cpf: String!
     email: String!
 }
+
+type Venda {
+    id: ID!
+    descricao: String!
+    valor_total: Float
+    data_venda: DateTime!
+    created_at: DateTime!
+    updated_at: DateTime!
+    cliente: Cliente
+    items: [VendaItems]
+}
+
+
+
+type VendaItems {
+    id: ID!
+    valor_unitario: Float
+    valor_total: Float
+    data_venda: DateTime!
+    created_at: DateTime!
+    updated_at: DateTime!
+    venda: Venda
+    produto: Produto
+}
+
