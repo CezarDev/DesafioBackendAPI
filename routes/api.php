@@ -31,3 +31,11 @@ Route::middleware('jwt.auth')->group(function () {
 
 });
 
+Route::get('unauthorized', function () {
+    return response()->json(['error' => 'Unauthorized.'], 401);
+})->name('unauthorized');
+
+
+Route::any('{segment}', function () {
+    return response()->json(['error' => 'Bad request.'], 400);
+})->where('segment', '.*');

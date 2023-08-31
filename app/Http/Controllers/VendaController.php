@@ -19,7 +19,9 @@ class VendaController extends Controller
      */
     public function index()
     {
-        //
+        $vendas = Venda::with('cliente', 'items.produto')->get()->makeHidden(['created_at', 'updated_at']);
+
+        return response()->json(['vendas' => $vendas]);
     }
 
     /**
@@ -50,7 +52,7 @@ class VendaController extends Controller
         if (!$cliente)
             return response()->json(['message' => 'Cliente não encontrado'], 404);
 
-        if (count($dados['itens']) > 0) {
+        if (isset($dados['itens']) && count($dados['itens']) > 0) {
             try {
                 $valorTotal = 0;
 
@@ -58,6 +60,7 @@ class VendaController extends Controller
                     'descricao' => $dados['descricao'],
                     'valor_total' => $valorTotal,
                     'data_venda' => date('Y-m-d H:i:s'),
+                    'cliente_id' => $cliente->id
                 ]);
                 $venda->save();
 
