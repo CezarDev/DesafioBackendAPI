@@ -2,16 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ProdutoRequest;
 use App\Models\Produto;
+use App\Services\ProdutoService;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\Storage;
 
 class ProdutoController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    protected ProdutoService $produtoService;
+
+    public function __construct(ProdutoService $produtoService)
+    {
+        $this->produtoService = $produtoService;
+    }
+
     public function index()
     {
         $produtos = Produto::get();
@@ -20,37 +26,24 @@ class ProdutoController extends Controller
     }
 
 
-    public function store(Request $request)
+    public function store(ProdutoRequest $request)
     {
-        $request->validate([
-            'nome'      => 'required|unique:produtos',
-            'descricao' => 'required',
-            'valor'     => 'required|numeric',
-        ]);
+        try {
+            $produto = $this->produtoService->salvarProduto($request);
 
-        $produto = new Produto([
-            'nome'            => $request->nome,
-            'descricao'       => $request->descricao,
-            'valor'           => $request->valor,
-            'link'            => $request->link ?? null,
-            'tipo_produto_id' => $request->tipo_produto_id,
-            'disponivel'      => $request->disponivel ?? true,
-        ]);
+        } catch (Exception $exception) {
 
-        $produto->save();
+            $erro = $exception->getMessage();
+            return response()->json(['message' => $erro], 500);
+        }
 
         return response()->json([
             'message' => 'Produto criado com sucesso',
             'produto' => $produto
         ], 201);
-
-        //return redirect('/produtos');
     }
 
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
         $produto = Produto::find($id);
@@ -61,17 +54,6 @@ class ProdutoController extends Controller
         return response()->json([ 'produto' => $produto ]);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         $request->validate([
@@ -80,15 +62,14 @@ class ProdutoController extends Controller
             'valor'     => 'required|numeric',
         ]);
 
-        $produto = Produto::updateOrCreate(
-            ['id' => $id],
-            [
-            'nome'            => $request->nome,
-            'descricao'       => $request->descricao,
-            'valor'           => $request->valor,
-            'link'            => $request->link ?? null,
-            'tipo_produto_id' => $request->tipo_produto_id,
-        ]);
+        try {
+            $produto = $this->produtoService->atualizarProduto($request, $id);
+
+        } catch (Exception $exception) {
+
+            $erro = $exception->getMessage();
+            return response()->json(['message' => $erro], 500);
+        }
 
         return response()->json([
             'message' => 'Produto atualizado com sucesso',
@@ -96,19 +77,14 @@ class ProdutoController extends Controller
         ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
-        $produto = Produto::find($id);
+        $produto = $this->produtoService->buscarProdutoPeloId($id);
 
         if (!$produto)
             return response()->json(['message' => 'Produto não encontrado'], 404);
 
-        $produto->delete();
-
-        $produtos = Produto::get();
+        $produtos = $this->produtoService->excluirProduto($produto);
 
         return response()->json([
             'message' => 'Produto excluído com sucesso',
