@@ -1,4 +1,6 @@
-<p align="center"><a href="https://czrsolutions.com/" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+## Introdução
+Este projeto consiste em uma API desenvolvida utilizando o
+framework Laravel, que permite o cadastro e gerenciamento de informações relacionadas a clientes, produtos e vendas. A API utiliza autenticação JWT (JSON Web Tokens) para garantir a segurança das operações e oferece uma interface GraphQL para consultas flexíveis e eficientes aos dados.
 
 ## AO CLONAR O PROJETO
 
@@ -33,3 +35,38 @@
 
 
 - Use o token em Authorization Bearer Token ou no Headers para as demais requisições
+
+
+## GRAPH QL
+### Consumo de Dados das Vendas com GraphQL
+
+- Para consumir os dados da venda utilizando GraphQL, você pode utilizar a seguinte query:
+
+- endpoint /graphql  
+
+```graphql
+query {
+  vendas {
+    data {
+      descricao
+      valor_total
+      data_venda
+      cliente {
+        nome
+        cpf
+        email
+      }
+      items {
+        valor_unitario
+        valor_total
+        produto {
+          nome
+          descricao
+          disponivel
+          valor
+        }
+      }
+    }
+  }
+}
+
